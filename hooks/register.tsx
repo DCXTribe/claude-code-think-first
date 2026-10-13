@@ -16,6 +16,8 @@ const COMMAND = 'superpowers-nudge'
 const CONFIG_KEY = 'superpowers-nudge.enabled'
 
 const nudge = atom({ plugin: 'superpowers-nudge', key: 'nudge' } as const, null)
+const paused = atom({ plugin: 'superpowers-nudge', key: 'paused' } as const, false)
+const PAUSED_STATUS = `superpowers nudge paused for this session. /${'superpowers-nudge'} resume to continue`
 
 export function classify(text: string): Suggestion | null {
   if (NOT_DEV.test(text)) return null
@@ -40,30 +42,44 @@ export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: COMMAND,
-      description: 'Turn the superpowers nudge on or off: /superpowers-nudge on|off|status',
+      description: 'Superpowers nudge: /superpowers-nudge on|off|pause|resume|status',
     })
     return next(e)
   })
 
   on('command.run', { command: COMMAND }, async ($, e) => {
-    const arg = e.args.trim().toLowerCase()
+    const arg = (e.args ?? '').trim().toLowerCase()
     if (arg === 'on' || arg === 'off') {
       await $.config.set({ key: CONFIG_KEY, value: arg === 'on' })
       return { text: `Superpowers nudge turned ${arg}.` }
     }
+    if (arg === 'pause' || arg === 'hold') {
+      await update($, paused, () => true)
+      await update($, nudge, () => null)
+      $.ui.status(PAUSED_STATUS)
+      return { text: 'Superpowers nudge paused for this session. /superpowers-nudge resume to continue.' }
+    }
+    if (arg === 'resume') {
+      await update($, paused, () => false)
+      $.ui.status(undefined)
+      return { text: 'Superpowers nudge resumed.' }
+    }
+    const isPaused = await read($, paused)
+    const state = !enabled ? 'off' : isPaused ? 'paused for this session' : 'on'
     return {
-      text: `Superpowers nudge is ${enabled ? 'on' : 'off'}. Use /${COMMAND} on or /${COMMAND} off, or the "Superpowers nudge" row in /config.`,
+      text: `Superpowers nudge is ${state}. Use /${COMMAND} on|off|pause|resume, or the "Superpowers nudge" row in /config.`,
     }
   })
 
   on('prompt.submit', async ($, e, next) => {
     active = null
     warnedEdit = false
-    suggestion = enabled ? classify(e.text) : null
+    const isPaused = await read($, paused)
+    suggestion = enabled && !isPaused ? classify(e.text) : null
     await update($, nudge, () => suggestion)
 
     if (suggestion === null) {
-      $.ui.status(undefined)
+      $.ui.status(isPaused ? PAUSED_STATUS : undefined)
       return next(e)
     }
 
@@ -117,6 +133,11 @@ export const register: Register = (on, options) => {
       await $.prompt.fill({ text: `/${current.skill} `, mode: 'replace' })
       await clear()
     }
+    const hold = async () => {
+      await update($, paused, () => true)
+      await clear()
+      $.ui.status(PAUSED_STATUS)
+    }
 
     return (
       <Box key="nudge" borderStyle="round" borderColor="claude" paddingX={1} gap={1}>
@@ -125,7 +146,8 @@ export const register: Register = (on, options) => {
           Dev task: {current.reason}. Suggested <Text bold>{current.skill}</Text>
         </Text>
         <Button key="activate" variant="primary" hotkey="a" onPress={activate}>Activate</Button>
-        <Button key="dismiss" role="dismiss" dimColor hotkey="d" onPress={clear}>Dismiss</Button>
+        <Button key="dismiss" dimColor hotkey="d" onPress={clear}>Dismiss</Button>
+        <Button key="hold" role="dismiss" dimColor hotkey="h" onPress={hold}>Hold</Button>
       </Box>
     )
   })

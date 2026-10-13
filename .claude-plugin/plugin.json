@@ -1,14 +1,16 @@
 {
   "name": "superpowers-nudge",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Alerts you, and reminds Claude, to activate a superpowers skill when a prompt looks like development work",
-  "author": { "name": "Victor Cheong" },
+  "author": {
+    "name": "Victor Cheong"
+  },
   "types": "./types/index.d.ts",
   "userConfig": {
     "enabled": {
       "type": "boolean",
       "title": "Superpowers nudge",
-      "description": "Show the band above the prompt and remind Claude to activate a superpowers skill when a prompt looks like development work. Also /superpowers-nudge on|off.",
+      "description": "Show the band above the prompt and remind Claude to activate a superpowers skill when a prompt looks like development work. Also /superpowers-nudge on|off|pause|resume.",
       "default": true
     }
   }

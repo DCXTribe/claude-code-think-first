@@ -2,6 +2,7 @@ import { test, expect } from 'claude-code/testing'
 import { classify } from '../hooks/register'
 
 const typed = (text: string) => ({ text, wait: false, origin: { kind: 'composer' } as const })
+const cmd = (args = '') => ({ command: 'superpowers-nudge', args, origin: { kind: 'composer' } as const, presentation: { isFullscreen: false, columns: 100 } })
 const BAND = {
   component: 'AbovePrompt' as const,
   props: { hasSurvey: false, isWorking: false, maxRows: 10, bodyColumns: 100, scroll: { offset: 0, bodyRows: 10 }, view: {} },
@@ -127,4 +128,46 @@ test('Dismiss clears the band without filling the prompt', async ($, on) => {
   expect(await ui.find({ key: 'dismiss' })).toBe(undefined)
   expect(filled.length).toBe(0)
   await ui.unmount()
+})
+
+test('Hold pauses detection for the session, resume brings it back', async ($, on) => {
+  const toasts: string[] = []
+  on('ui.toast', (_$, e) => { toasts.push(e.text); return { value: undefined } })
+  on('ui.status', () => ({ value: undefined }))
+  on('prompt.submit', (_$, e) => ({ text: e.text, context: e.context }))
+  on('prompt.fill', () => ({ isFilled: true }))
+  on('ui.render', { component: 'AbovePrompt' }, ($, e) => { const { Box } = $.ui.resolve(e); return <Box key="empty" /> })
+
+  const ui = await $.ui.mount({ plugin: 'superpowers-nudge', surface: 'terminal', ...BAND })
+  await $.prompt.submit(typed('fix the broken build'))
+  await ui.redraw()
+  expect(await ui.find({ key: 'hold' })).toBeDefined()
+
+  await ui.press({ key: 'hold' })
+  await ui.redraw()
+  expect(await ui.find({ key: 'hold' })).toBe(undefined)
+
+  await $.prompt.submit(typed('add a new feature'))
+  await ui.redraw()
+  expect(await ui.find({ key: 'activate' })).toBe(undefined)
+  expect(toasts.length).toBe(1)
+  expect((await $.command.run(cmd())).text).toContain('paused')
+
+  expect((await $.command.run(cmd('resume'))).text).toContain('resumed')
+  await $.prompt.submit(typed('add another feature'))
+  await ui.redraw()
+  expect(await ui.find({ key: 'activate' })).toBeDefined()
+  expect(toasts.length).toBe(2)
+  await ui.unmount()
+})
+
+test('/superpowers-nudge pause works without the band', async ($, on) => {
+  const toasts: string[] = []
+  on('ui.toast', (_$, e) => { toasts.push(e.text); return { value: undefined } })
+  on('ui.status', () => ({ value: undefined }))
+  on('prompt.submit', (_$, e) => ({ text: e.text, context: e.context }))
+
+  expect((await $.command.run(cmd('pause'))).text).toContain('paused')
+  await $.prompt.submit(typed('fix the crash'))
+  expect(toasts.length).toBe(0)
 })

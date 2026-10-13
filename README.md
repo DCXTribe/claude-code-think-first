@@ -28,3 +28,9 @@ The plugin is read from this folder, so edits apply after `/reload-plugins` or a
 claude plugin validate .
 claude plugin test .
 ```
+
+## The band
+
+- **Activate** fills the prompt with the suggested skill command; press Enter to run it.
+- **Dismiss** hides the band for this prompt.
+- **Hold** pauses detection for the rest of the session, for when superpowers is already running. `/superpowers-nudge resume` turns it back on.
