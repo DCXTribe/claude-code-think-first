@@ -1,6 +1,6 @@
 {
-  "name": "vicmods",
-  "description": "Claude Code mods by Victor Cheong: bands above the prompt that shape how Claude works.",
+  "name": "think-first",
+  "description": "Claude Code mods that make Claude think before it acts: sharpen the task first, bring in the right skill first.",
   "owner": { "name": "Victor Cheong" },
   "plugins": [
     {

@@ -9,16 +9,16 @@ skill command, and attaches a short reminder to Claude to invoke that skill firs
 At the prompt of a Claude Code terminal session:
 
 ```
-/plugin install superpowers-nudge --marketplace DCXTribe/VicMods
+/plugin install superpowers-nudge --marketplace DCXTribe/claude-code-think-first
 ```
 
 From a shell:
 
 ```
-claude plugin install superpowers-nudge --marketplace DCXTribe/VicMods
+claude plugin install superpowers-nudge --marketplace DCXTribe/claude-code-think-first
 ```
 
-In the desktop app: click + next to the prompt box, then Plugins, Add marketplace with `DCXTribe/VicMods`, then Add plugin.
+In the desktop app: click + next to the prompt box, then Plugins, Add marketplace with `DCXTribe/claude-code-think-first`, then Add plugin.
 
 ## Manage
 

@@ -7,16 +7,16 @@ A band above the prompt. Fable thinks, Opus and Sonnet act, and a token meter ke
 At the prompt of a Claude Code terminal session:
 
 ```
-/plugin install fable-ambition --marketplace DCXTribe/VicMods
+/plugin install fable-ambition --marketplace DCXTribe/claude-code-think-first
 ```
 
 From a shell:
 
 ```
-claude plugin install fable-ambition --marketplace DCXTribe/VicMods
+claude plugin install fable-ambition --marketplace DCXTribe/claude-code-think-first
 ```
 
-In the desktop app: click + next to the prompt box, then Plugins, Add marketplace with `DCXTribe/VicMods`, then Add plugin.
+In the desktop app: click + next to the prompt box, then Plugins, Add marketplace with `DCXTribe/claude-code-think-first`, then Add plugin.
 
 ## What it does
 
