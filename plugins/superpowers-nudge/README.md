@@ -45,3 +45,11 @@ claude plugin test .
 - **Hold** pauses detection for the rest of the session, for when superpowers is already running. `/superpowers-nudge resume` turns it back on.
 
 Other bands above the prompt (fable-ambition's, for one) are drawn beneath this one rather than hidden.
+
+## What it runs and sends
+
+- **Prompt check.** It matches each prompt you submit against fixed word lists, on your machine. Nothing is sent anywhere to decide.
+- **Context for Claude.** When a prompt looks like development work, it attaches one line of context to that prompt telling Claude to invoke the suggested superpowers skill first.
+- **Watching tools.** It notices when Claude calls the Skill tool (to show which superpowers skill is active) and when Claude edits a code file before one is active (to show a toast). It never blocks or changes those calls.
+- **Settings.** `/superpowers-nudge on|off` writes its one option, `enabled`, to your Claude Code settings.
+- **Nothing else.** It makes no model calls, reads no files, runs no processes and contacts no service. It works best with the [superpowers](https://github.com/obra/superpowers) plugin installed, which provides the skills it suggests.

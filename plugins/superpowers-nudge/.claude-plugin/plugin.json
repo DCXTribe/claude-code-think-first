@@ -1,10 +1,13 @@
 {
   "name": "superpowers-nudge",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Alerts you, and reminds Claude, to activate a superpowers skill when a prompt looks like development work",
   "author": {
     "name": "Victor Cheong"
   },
+  "license": "MIT",
+  "homepage": "https://github.com/DCXTribe/claude-code-think-first",
+  "repository": "https://github.com/DCXTribe/claude-code-think-first",
   "types": "./types/index.d.ts",
   "userConfig": {
     "enabled": {

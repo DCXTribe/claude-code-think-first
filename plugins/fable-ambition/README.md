@@ -39,6 +39,14 @@ The reply lands in a card above the prompt. `u` replaces your draft with it (Dee
 - A subagent that would run on Fable is rerouted to Opus, with a toast: one that names Fable, and one that names no model while the main session runs on Fable (it would inherit Fable). That second case also moves an agent type whose own definition names a model, since the hook cannot see it. Forks, workflow agents and resumed runs keep their model; the meter counts them under `fable` if they run there. A system-prompt section tells the main model to delegate hard pieces to `opus` and routine ones to `sonnet`, and never to Fable.
 - The meter counts billable tokens per lane (Fable / Opus / Sonnet / other) from every completed turn, main thread and subagents alike, plus the band's own Fable calls. Cache reads are left out of the share (every executor turn rereads the transcript from cache, cheaply) and shown in the raw row. Spawns are counted by the model they actually run on. Above 20% Fable share it turns amber.
 
+## What it runs and sends
+
+- **Model calls.** Each band function (Reverb, Council, Summit, Deepen) makes one call to Fable through your own Claude Code session, sending only the text in your prompt box (or the task given to `/ambition <fn> <task>`) and that function's fixed instructions. No conversation history goes with it. Nothing runs until you press a key or run the command.
+- **System prompt.** It adds one short section to Claude's system prompt: the routing rule (delegate to Opus or Sonnet, not Fable) and a note that a `[Reverb]`, `[Council]` or `[Summit]` block in your prompt came from Fable.
+- **Subagents.** A subagent that would run on Fable is started on Opus instead, with a toast saying so.
+- **Local state only.** The token meter reads the usage Claude Code reports at the end of each turn and keeps it in this session's plugin state. It is not saved across sessions.
+- **Nothing else.** It reads no files, runs no processes, and contacts no service other than your Claude Code session's own model API.
+
 ## Files
 
 ```
