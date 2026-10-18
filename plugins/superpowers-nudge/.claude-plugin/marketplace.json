@@ -1,0 +1,11 @@
+{
+  "name": "victor-mods",
+  "owner": { "name": "Victor Cheong" },
+  "plugins": [
+    {
+      "name": "superpowers-nudge",
+      "source": "./",
+      "description": "Band above the prompt that nudges you and Claude to activate a superpowers skill on development prompts"
+    }
+  ]
+}
