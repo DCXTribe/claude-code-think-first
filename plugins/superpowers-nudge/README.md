@@ -52,4 +52,4 @@ Other bands above the prompt (fable-ambition's, for one) are drawn beneath this 
 - **Context for Claude.** When a prompt looks like development work, it attaches one line of context to that prompt telling Claude to invoke the suggested superpowers skill first.
 - **Watching tools.** It notices when Claude calls the Skill tool (to show which superpowers skill is active) and when Claude edits a code file before one is active (to show a toast). It never blocks or changes those calls.
 - **Settings.** `/superpowers-nudge on|off` writes its one option, `enabled`, to your Claude Code settings.
-- **Nothing else.** It makes no model calls, reads no files, runs no processes and contacts no service. It works best with the [superpowers](https://github.com/obra/superpowers) plugin installed, which provides the skills it suggests.
+- **Nothing else.** It makes no model calls, reads no files, runs no processes and contacts no service. It works best with the [superpowers](https://github.com/obra/superpowers) plugin installed, which provides the skills it suggests. superpowers-nudge is a separate project by Victor Cheong, not part of superpowers.
