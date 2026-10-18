@@ -68,7 +68,7 @@ test('invoking a superpowers skill updates the status to active', async ($, on) 
   await $.prompt.submit(typed('implement the export feature'))
   await $.tool.call({ tool: 'Skill', skill: 'superpowers:brainstorming' })
 
-  expect(statuses[statuses.length - 1]).toBe('superpowers: superpowers:brainstorming active')
+  expect(statuses[statuses.length - 1]).toBe('superpowers: brainstorming active')
 })
 
 test('editing a code file before activation toasts once per turn', async ($, on) => {
@@ -170,4 +170,76 @@ test('/superpowers-nudge pause works without the band', async ($, on) => {
   expect((await $.command.run(cmd('pause'))).text).toContain('paused')
   await $.prompt.submit(typed('fix the crash'))
   expect(toasts.length).toBe(0)
+})
+
+test('everyday prompts with a dev word do not nudge', async () => {
+  expect(classify('write a LinkedIn post about our launch')).toBe(null)
+  expect(classify('create a calendar invite for Friday')).toBe(null)
+  expect(classify('fix the typo in the README')).toBe(null)
+  expect(classify('show me the mod')).toBe(null)
+  expect(classify('do i have another nudge mod')).toBe(null)
+  expect(classify('build a settings page')?.skill).toBe('superpowers:brainstorming')
+  expect(classify('refactor the parser')?.skill).toBe('superpowers:brainstorming')
+  expect(classify('fix the crash on startup')?.skill).toBe('superpowers:systematic-debugging')
+})
+
+test('a new dev prompt clears the last turn\'s "active" status', async ($, on) => {
+  const statuses: (string | undefined)[] = []
+  on('ui.toast', () => ({ value: undefined }))
+  on('ui.status', (_$, e) => { statuses.push(e.text); return { value: undefined } })
+  on('prompt.submit', (_$, e) => ({ text: e.text, context: e.context }))
+  on('tool.call', { tool: 'Skill' }, () => ({ result: 'ok' }))
+
+  await $.prompt.submit(typed('implement the export feature'))
+  await $.tool.call({ tool: 'Skill', skill: 'superpowers:brainstorming' })
+  await $.prompt.submit(typed('fix the crash on startup'))
+
+  expect(statuses[statuses.length - 1]).toBe(undefined)
+})
+
+test('Activate puts the skill in front of the draft instead of over it', async ($, on) => {
+  const filled: string[] = []
+  on('ui.toast', () => ({ value: undefined }))
+  on('ui.status', () => ({ value: undefined }))
+  on('prompt.submit', (_$, e) => ({ text: e.text, context: e.context }))
+  on('prompt.read', () => ({ value: { text: 'and keep the old API', cursor: 0 } }))
+  on('prompt.fill', (_$, e) => { filled.push(e.text); return { isFilled: true } })
+  on('ui.render', { component: 'AbovePrompt' }, ($, e) => { const { Box } = $.ui.resolve(e); return <Box key="empty" /> })
+
+  const ui = await $.ui.mount({ plugin: 'superpowers-nudge', surface: 'terminal', ...BAND })
+  await $.prompt.submit(typed('add a dark mode toggle'))
+  await ui.redraw()
+  await ui.press({ key: 'activate' })
+  expect(filled).toEqual(['/superpowers:brainstorming and keep the old API'])
+  await ui.unmount()
+})
+
+test('only Dismiss is the close control, so closing never pauses the session', async ($, on) => {
+  on('ui.toast', () => ({ value: undefined }))
+  on('ui.status', () => ({ value: undefined }))
+  on('prompt.submit', (_$, e) => ({ text: e.text, context: e.context }))
+  on('ui.render', { component: 'AbovePrompt' }, ($, e) => { const { Box } = $.ui.resolve(e); return <Box key="empty" /> })
+
+  const ui = await $.ui.mount({ plugin: 'superpowers-nudge', surface: 'desktop', ...BAND })
+  await $.prompt.submit(typed('fix the broken build'))
+  await ui.redraw()
+  expect((await ui.find({ key: 'dismiss' }))?.props.role).toBe('dismiss')
+  expect((await ui.find({ key: 'hold' }))?.props.role).toBe(undefined)
+  await ui.unmount()
+})
+
+test('another plugin\'s band beneath is drawn under the nudge, not hidden', async ($, on) => {
+  on('ui.toast', () => ({ value: undefined }))
+  on('ui.status', () => ({ value: undefined }))
+  on('prompt.submit', (_$, e) => ({ text: e.text, context: e.context }))
+  on('ui.render', { component: 'AbovePrompt' }, ($, e) => { const { Text } = $.ui.resolve(e); return <Text key="other">other band</Text> })
+
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ plugin: 'superpowers-nudge', surface, ...BAND })
+    await $.prompt.submit(typed('fix the broken build'))
+    await ui.redraw()
+    expect(await ui.find({ key: 'activate' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'other band' })).toBeDefined()
+    await ui.unmount()
+  }
 })

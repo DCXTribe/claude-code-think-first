@@ -31,6 +31,8 @@ claude plugin test .
 
 ## The band
 
-- **Activate** fills the prompt with the suggested skill command; press Enter to run it.
-- **Dismiss** hides the band for this prompt.
+- **Activate** puts the suggested skill command in front of whatever you are typing; press Enter to run it.
+- **Dismiss** hides the band for this prompt (on the desktop it is the band's close control).
 - **Hold** pauses detection for the rest of the session, for when superpowers is already running. `/superpowers-nudge resume` turns it back on.
+
+Other bands above the prompt (fable-ambition's, for one) are drawn beneath this one rather than hidden.

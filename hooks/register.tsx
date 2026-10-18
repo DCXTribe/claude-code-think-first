@@ -4,11 +4,18 @@ import type { Register } from 'claude-code'
 import type { Suggestion } from '../types'
 
 // Which superpowers skill fits the prompt, by the words it uses.
-const DEBUG = /\b(bug|bugs|broken|fix|fixes|fixing|crash|crashes|error|errors|exception|failing|fails|not working|doesn'?t work|regression|debug|stack ?trace)\b/i
-const BUILD = /\b(build|builds|building|implement|implements|implementing|create|creates|creating|add|adds|adding|write|writes|writing|develop|developing|feature|features|refactor|refactors|refactoring|migrate|migrating|integrate|integrating|scaffold|set ?up|wire ?up|extend|extending|component|endpoint|api|cli|app|service|module|function|class|script|page|screen)\b/i
+// A failure described, not the bare verb "fix": "fix the typo in the README"
+// or "fix all of the review findings" is not a bug hunt.
+const DEBUG = /\b(bug|bugs|broken|crash|crashes|crashing|error|errors|exception|exceptions|failing|fails|failed|not working|doesn'?t work|regression|debug|debugging|stack ?trace|traceback|segfault)\b/i
+// Verbs that only ever mean code.
+const CODE_VERB = /\b(implement|implements|implementing|refactor|refactors|refactoring|scaffold|scaffolding|migrate|migrating)\b/i
+// Verbs that mean code only next to a thing software is made of: "write a
+// LinkedIn post" and "create a calendar invite" are not dev work.
+const BUILD_VERB = /\b(build|builds|building|create|creates|creating|add|adds|adding|write|writes|writing|develop|developing|integrate|integrating|set ?up|wire ?up|extend|extending)\b/i
+const CODE_NOUN = /\b(feature|features|component|components|endpoint|endpoints|api|apis|cli|app|apps|service|services|module|modules|function|functions|class|classes|script|scripts|page|pages|screen|screens|plugin|plugins|mod|mods|hook|hooks|database|schema|migration|route|routes|handler|library|sdk|server|backend|frontend|website|toggle|setting|settings|button|form|widget)\b/i
 const TEST = /\b(test|tests|testing|spec|specs|coverage|tdd)\b/i
 // Prompts that are not dev tasks even when a dev word appears.
-const NOT_DEV = /^\s*(\/|what is|what's|explain|why does|how does|tell me about)/i
+const NOT_DEV = /^\s*(\/|what is|what's|explain|why does|how does|how do i|tell me about|show me|is there|are there|do i have)/i
 
 const CODE_FILE = /\.(ts|tsx|js|jsx|mjs|cjs|py|rb|go|rs|java|kt|swift|m|mm|c|cc|cpp|h|hpp|cs|php|sh|zsh|sql|vue|svelte|dart|scala|ex|exs|html|css|scss)$/i
 
@@ -24,7 +31,7 @@ export function classify(text: string): Suggestion | null {
   if (DEBUG.test(text)) {
     return { skill: 'superpowers:systematic-debugging', reason: 'bug or failure described' }
   }
-  if (BUILD.test(text)) {
+  if (CODE_VERB.test(text) || (BUILD_VERB.test(text) && CODE_NOUN.test(text))) {
     return { skill: 'superpowers:brainstorming', reason: 'something to build or change' }
   }
   if (TEST.test(text)) {
@@ -78,10 +85,9 @@ export const register: Register = (on, options) => {
     suggestion = enabled && !isPaused ? classify(e.text) : null
     await update($, nudge, () => suggestion)
 
-    if (suggestion === null) {
-      $.ui.status(isPaused ? PAUSED_STATUS : undefined)
-      return next(e)
-    }
+    // The last turn's "active" is not this turn's.
+    $.ui.status(isPaused ? PAUSED_STATUS : undefined)
+    if (suggestion === null) return next(e)
 
     $.ui.toast(`Dev task detected (${suggestion.reason}): activate ${suggestion.skill}`, { timeoutMs: 6000 })
 
@@ -97,7 +103,7 @@ export const register: Register = (on, options) => {
     if (e.skill.startsWith('superpowers:')) {
       active = e.skill
       await update($, nudge, () => null)
-      $.ui.status(`superpowers: ${e.skill} active`)
+      $.ui.status(`superpowers: ${e.skill.slice('superpowers:'.length)} active`)
     }
     return next(e)
   })
@@ -129,8 +135,10 @@ export const register: Register = (on, options) => {
 
     const { Box, Button, Text } = $.ui.resolve(e)
     const clear = () => update($, nudge, () => null)
+    // Put the skill command in front of whatever is being typed, never over it.
     const activate = async () => {
-      await $.prompt.fill({ text: `/${current.skill} `, mode: 'replace' })
+      const draft = await $.prompt.read().then((b) => b.text.trim(), () => '')
+      await $.prompt.fill({ text: `/${current.skill} ${draft}`, mode: 'replace' })
       await clear()
     }
     const hold = async () => {
@@ -139,15 +147,23 @@ export const register: Register = (on, options) => {
       $.ui.status(PAUSED_STATUS)
     }
 
+    // Another plugin's band (fable-ambition's, say) may sit beneath: draw it
+    // under this one instead of hiding it.
+    const below = await next(e)
+
     return (
-      <Box key="nudge" borderStyle="round" borderColor="claude" paddingX={1} gap={1}>
-        <Text bold color="claude">⚡ Superpowers</Text>
-        <Text>
-          Dev task: {current.reason}. Suggested <Text bold>{current.skill}</Text>
-        </Text>
-        <Button key="activate" variant="primary" hotkey="a" onPress={activate}>Activate</Button>
-        <Button key="dismiss" dimColor hotkey="d" onPress={clear}>Dismiss</Button>
-        <Button key="hold" role="dismiss" dimColor hotkey="h" onPress={hold}>Hold</Button>
+      <Box flexDirection="column">
+        <Box key="nudge" borderStyle="round" borderColor="claude" paddingX={1} gap={1}>
+          <Text bold color="claude">⚡ Superpowers</Text>
+          <Text>
+            Dev task: {current.reason}. Suggested <Text bold>{current.skill}</Text>
+          </Text>
+          <Button key="activate" variant="primary" hotkey="a" onPress={activate}>Activate</Button>
+          {/* role="dismiss" is the desktop's close control: it must only dismiss, never pause the session. */}
+          <Button key="dismiss" role="dismiss" dimColor hotkey="d" onPress={clear}>Dismiss</Button>
+          <Button key="hold" dimColor hotkey="h" onPress={hold}>Hold</Button>
+        </Box>
+        {below}
       </Box>
     )
   })
