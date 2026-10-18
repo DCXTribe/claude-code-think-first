@@ -6,10 +6,19 @@ skill command, and attaches a short reminder to Claude to invoke that skill firs
 
 ## Install
 
+At the prompt of a Claude Code terminal session:
+
 ```
-claude plugin marketplace add ~/ClaudeDeveloper/superpowers-nudge
-claude plugin install superpowers-nudge@victor-mods
+/plugin install superpowers-nudge --marketplace DCXTribe/VicMods
 ```
+
+From a shell:
+
+```
+claude plugin install superpowers-nudge --marketplace DCXTribe/VicMods
+```
+
+In the desktop app: click + next to the prompt box, then Plugins, Add marketplace with `DCXTribe/VicMods`, then Add plugin.
 
 ## Manage
 
@@ -22,7 +31,7 @@ Inside a session: `/superpowers-nudge on|off|status`, or the "Superpowers nudge"
 
 ## Develop
 
-The plugin is read from this folder, so edits apply after `/reload-plugins` or a restart.
+From a clone, run it from its folder with `claude --plugin-dir plugins/superpowers-nudge`.
 
 ```
 claude plugin validate .

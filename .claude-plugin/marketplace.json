@@ -1,0 +1,17 @@
+{
+  "name": "vicmods",
+  "description": "Claude Code mods by Victor Cheong: bands above the prompt that shape how Claude works.",
+  "owner": { "name": "Victor Cheong" },
+  "plugins": [
+    {
+      "name": "fable-ambition",
+      "source": "./plugins/fable-ambition",
+      "description": "A band above the prompt: Fable thinks (Reverb, Council, Summit, Deepen), Opus and Sonnet act, and a token meter keeps Fable's share honest."
+    },
+    {
+      "name": "superpowers-nudge",
+      "source": "./plugins/superpowers-nudge",
+      "description": "Band above the prompt that nudges you and Claude to activate a superpowers skill on development prompts."
+    }
+  ]
+}

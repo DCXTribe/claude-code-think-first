@@ -1,0 +1,9 @@
+{
+  "name": "fable-ambition",
+  "version": "0.1.0",
+  "description": "A band above the prompt: Fable thinks (Reverb, Council, Summit, Deepen), Opus and Sonnet act, and a token meter keeps Fable's share honest.",
+  "author": {
+    "name": "Victor Cheong"
+  },
+  "types": "./types/index.d.ts"
+}
