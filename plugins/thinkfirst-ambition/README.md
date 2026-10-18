@@ -20,7 +20,7 @@ In the desktop app: click + next to the prompt box, then Plugins, Add marketplac
 
 ## What it does
 
-Type your task in the prompt box, then press one key (the band must have focus: click it or `ctrl+x tab`):
+Type your task in the prompt box, then press one key (the band must have focus: click it or `ctrl+x tab`). The first press opens a panel that explains the function: what it does, what you get back, when it helps and what Use puts in your prompt. Nothing is sent yet. Press the same key again (or the panel's run button) to run it. Another number switches the panel to that function, and `c` closes it.
 
 | Key | Function | One Fable call that returns… |
 |---|---|---|
@@ -53,13 +53,14 @@ The reply lands in a card above the prompt. `u` replaces your draft with it (Dee
 .claude-plugin/plugin.json   manifest
 hooks/hooks.json             → register.tsx
 hooks/register.tsx           the band, the four functions, the meter, the routing hooks
-types/index.d.ts             state contract (card, busy, spend, isHidden, showRaw)
+types/index.d.ts             state contract (card, busy, spend, isHidden, showRaw, armed)
 tests/band.test.tsx          the band's drawing
 tests/fixes.test.tsx         routing, /ambition <fn> <task>, append, the busy guard, the meter
+tests/preview.test.tsx       first press explains, second press runs, switch and cancel
 ```
 
 Validate with `claude plugin validate .`, type-check with `tsc -p .` once the engine has laid `.claude-plugin/types/`, test with `claude plugin test .`.
 
 ## Tuning
 
-Edit the top of `hooks/register.tsx`: `THINKER` (the model the band calls), `FABLE_WARN_SHARE` (the amber threshold), and the `FN` table (system prompts, effort, token caps per function).
+Edit the top of `hooks/register.tsx`: `THINKER` (the model the band calls), `FABLE_WARN_SHARE` (the amber threshold), and the `FN` table (system prompts, effort, token caps and the explanation panel's text per function).

@@ -33,6 +33,7 @@ const busy = atom({ plugin: 'thinkfirst-ambition', key: 'busy' } as const, null)
 const spend = atom({ plugin: 'thinkfirst-ambition', key: 'spend' } as const, emptySpend())
 const isHidden = atom({ plugin: 'thinkfirst-ambition', key: 'isHidden' } as const, false)
 const showRaw = atom({ plugin: 'thinkfirst-ambition', key: 'showRaw' } as const, false)
+const armed = atom({ plugin: 'thinkfirst-ambition', key: 'armed' } as const, null)
 
 // ---------------------------------------------------------------------------
 // Models and routing
@@ -100,7 +101,18 @@ const k = (n: number) => (n >= 1000 ? `${Math.round(n / 100) / 10}k` : `${n}`)
 // The four functions. Each is one Fable call, high effort, no history.
 // ---------------------------------------------------------------------------
 
-const FN: Record<Fn, { label: string; hotkey: string; effort: 'high' | 'xhigh'; maxTokens: number; system: string }> = {
+type Detail = {
+  /** One line: what the function is. */
+  what: string
+  /** What lands in the card. */
+  gives: string
+  /** When to reach for it. */
+  when: string
+  /** What Use (u) puts in the prompt box. */
+  use: string
+}
+
+const FN: Record<Fn, { label: string; hotkey: string; effort: 'high' | 'xhigh'; maxTokens: number; system: string; detail: Detail }> = {
   reverb: {
     label: 'Reverb',
     hotkey: '1',
@@ -112,6 +124,12 @@ const FN: Record<Fn, { label: string; hotkey: string; effort: 'high' | 'xhigh'; 
       'Example: "QBR deck" becomes "getting busy people to believe a story about cause and effect and decide under uncertainty in 30 minutes."',
       'Answer with ONE line in that shape and nothing else. No preamble, no quotes, no options.',
     ].join(' '),
+    detail: {
+      what: 'Finds the key noun in your task (the deck, the dashboard, the report) and rewrites it as the real verb: the outcome it exists to cause, for whom, under what constraint.',
+      gives: 'One line. "QBR deck" becomes "getting busy people to believe a story about cause and effect and decide in 30 minutes."',
+      when: 'Your task names a thing to make and you want the executor aiming at what the thing is for.',
+      use: 'A [Reverb] block with that line.',
+    },
   },
   council: {
     label: 'Council',
@@ -124,6 +142,12 @@ const FN: Record<Fn, { label: string; hotkey: string; effort: 'high' | 'xhigh'; 
       'The last seat is always Red Team: the person in the room who wants this to fail and asks the question that kills it.',
       'Format: one line per lens, "Name — one sentence stating what that lens checks or changes for THIS task." Red Team last. Nothing else.',
     ].join(' '),
+    detail: {
+      what: 'Assembles 3 to 5 lenses (methods and checks, not personas) that would each change how this task is done. Red Team always sits last.',
+      gives: 'One line per lens: its name and what it checks or changes for this task.',
+      when: 'The task has several ways to go wrong and you want them named before any work starts.',
+      use: 'A [Council] block with the lenses.',
+    },
   },
   summit: {
     label: 'Summit',
@@ -136,6 +160,12 @@ const FN: Record<Fn, { label: string; hotkey: string; effort: 'high' | 'xhigh'; 
       'Hard target: an ambitious but solvable, measurable bar, with a number or a binary (200 ms, crash-free, 3 decisions logged), never an adjective.',
       'Outside judge: something other than the user or a model that will show the result is right (a tool measurement, a backtest, real-user numbers, a statistical test).',
     ].join(' '),
+    detail: {
+      what: 'Raises the altitude of your task: the outcome behind it, a bar it must clear, and something outside you and the model that proves it cleared it.',
+      gives: 'Three labelled lines: Goal beyond the goal · Hard target (a number or a yes/no) · Outside judge (a test, a measurement, real numbers).',
+      when: 'You know what to do but not what "done well" means, or want a result you can check.',
+      use: 'A [Summit] block with the three lines.',
+    },
   },
   deepen: {
     label: 'Deepen',
@@ -152,6 +182,12 @@ const FN: Record<Fn, { label: string; hotkey: string; effort: 'high' | 'xhigh'; 
       'Format: the four answers as a numbered list, two sentences each at most; then a line "## Rewritten task" and the rewritten prompt, written to be sent as-is to an executor model.',
       'Insist on real instruments (code, data, profilers, tests), not better vocabulary. Do not pad.',
     ].join(' '),
+    detail: {
+      what: 'Asks what a top professional would do here that you are not asking for: their rawest starting material, their methods and tools, and what would show the result is right. Then rewrites your prompt to ask for exactly that.',
+      gives: 'The four answers, then a "Rewritten task" ready to send as-is.',
+      when: 'The task is worth doing properly and your draft asks for the shallow version.',
+      use: 'The rewritten task alone, replacing your draft.',
+    },
   },
 }
 
@@ -228,6 +264,16 @@ const think = async ($: EngineInterface, fn: Fn, source: string) => {
   }
 }
 
+// First press of 1–4 shows what the function does; a second press of the
+// same key runs it. Another key moves the preview; c cancels it.
+const press = async ($: EngineInterface, fn: Fn) => {
+  if ((await read($, armed)) === fn) {
+    if (await run($, fn)) await update($, armed, () => null)
+    return
+  }
+  await update($, armed, () => fn)
+}
+
 // Taking a card: replace the draft, or append to the draft as it is now (not
 // as it was when the function ran), then close the card.
 const take = async ($: EngineInterface, mode: 'replace' | 'append') => {
@@ -276,6 +322,7 @@ export const register: Register = (on) => {
       if (task.length === 0) {
         return { text: `Usage: /ambition ${fn} <task>. Or type the task in the prompt and press ${FN[fn].hotkey} in the band.` }
       }
+      await update($, armed, () => null)
       const started = await run($, fn, task)
       return { text: started ? `${FN[fn].label} running on Fable.` : 'Fable is already thinking; try again when it answers.' }
     }
@@ -340,7 +387,7 @@ export const register: Register = (on) => {
     if (e.props.hasSurvey || (await read($, isHidden))) return next(e)
 
     const { Box, Button, Text, Markdown } = $.ui.resolve(e)
-    const [c, b, s0, raw] = await Promise.all([read($, card), read($, busy), read($, spend), read($, showRaw)])
+    const [c, b, s0, raw, arm] = await Promise.all([read($, card), read($, busy), read($, spend), read($, showRaw), read($, armed)])
     const s = asSpend(s0)
 
     const all = total(s.fable) + total(s.opus) + total(s.sonnet) + total(s.other)
@@ -364,8 +411,9 @@ export const register: Register = (on) => {
               key={fn}
               hotkey={FN[fn].hotkey}
               label={b === fn ? `${FN[fn].label}…` : FN[fn].label}
+              variant={arm === fn ? 'primary' : undefined}
               dimColor={b !== null && b !== fn}
-              onPress={() => void run($, fn)}
+              onPress={() => void press($, fn)}
             />
           ))}
           <Text dimColor>│</Text>
@@ -397,7 +445,41 @@ export const register: Register = (on) => {
           {warn && <Text color="yellow">Fable above {Math.round(FABLE_WARN_SHARE * 100)}%: let the executors run.</Text>}
         </Box>
 
-        {/* Row 3: the card, when a function has answered */}
+        {/* Row 3: what the pressed function does, before it runs */}
+        {arm !== null && (
+          <Box key="detail" flexDirection="column" borderStyle="round" borderColor="cyan" paddingX={1} marginTop={1}>
+            <Text bold color="cyan">
+              {FN[arm].hotkey} · {FN[arm].label}{' '}
+              <Text dimColor>
+                · Fable, {FN[arm].effort} effort, reads only your prompt box
+              </Text>
+            </Text>
+            <Text>{FN[arm].detail.what}</Text>
+            <Text>
+              <Text bold>You get: </Text>
+              {FN[arm].detail.gives}
+            </Text>
+            <Text>
+              <Text bold>Best when: </Text>
+              {FN[arm].detail.when}
+            </Text>
+            <Text>
+              <Text bold>Use (u) puts in your prompt: </Text>
+              {FN[arm].detail.use}
+            </Text>
+            <Box gap={1} marginTop={1}>
+              <Button
+                key="run"
+                variant="primary"
+                label={`Press ${FN[arm].hotkey} again to run ${FN[arm].label}`}
+                onPress={() => void press($, arm)}
+              />
+              <Button key="cancel" hotkey="c" label="Cancel" onPress={() => update($, armed, () => null)} />
+            </Box>
+          </Box>
+        )}
+
+        {/* Row 4: the card, when a function has answered */}
         {c !== null && (
           <Box flexDirection="column" borderStyle="round" borderColor={c.fn === 'council' ? 'red' : 'yellow'} paddingX={1} marginTop={1}>
             <Text bold color="yellow">

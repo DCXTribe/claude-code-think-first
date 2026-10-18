@@ -34,6 +34,8 @@ declare module 'claude-code' {
       spend: Spend
       isHidden: boolean
       showRaw: boolean
+      /** The function whose explanation is showing; its key again runs it. */
+      armed: Fn | null
     }
   }
 }
