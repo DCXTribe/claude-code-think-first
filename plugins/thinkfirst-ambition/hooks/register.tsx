@@ -7,7 +7,7 @@ import type { Card, Fn, Lane, Spend } from '../types'
 // State
 // ---------------------------------------------------------------------------
 
-const PLUGIN = 'fable-ambition' as const
+const PLUGIN = 'thinkfirst-ambition' as const
 const emptyLane = (): Lane => ({ in: 0, out: 0, cached: 0, calls: 0 })
 const emptySpend = (): Spend => ({
   fable: emptyLane(),
@@ -28,11 +28,11 @@ const asSpend = (s: Partial<Spend> | undefined): Spend => ({
   spawns: { ...emptySpend().spawns, ...s?.spawns },
 })
 
-const card = atom({ plugin: 'fable-ambition', key: 'card' } as const, null)
-const busy = atom({ plugin: 'fable-ambition', key: 'busy' } as const, null)
-const spend = atom({ plugin: 'fable-ambition', key: 'spend' } as const, emptySpend())
-const isHidden = atom({ plugin: 'fable-ambition', key: 'isHidden' } as const, false)
-const showRaw = atom({ plugin: 'fable-ambition', key: 'showRaw' } as const, false)
+const card = atom({ plugin: 'thinkfirst-ambition', key: 'card' } as const, null)
+const busy = atom({ plugin: 'thinkfirst-ambition', key: 'busy' } as const, null)
+const spend = atom({ plugin: 'thinkfirst-ambition', key: 'spend' } as const, emptySpend())
+const isHidden = atom({ plugin: 'thinkfirst-ambition', key: 'isHidden' } as const, false)
+const showRaw = atom({ plugin: 'thinkfirst-ambition', key: 'showRaw' } as const, false)
 
 // ---------------------------------------------------------------------------
 // Models and routing
@@ -351,7 +351,7 @@ export const register: Register = (on) => {
     const bar = '▮'.repeat(lit) + '▯'.repeat(cells - lit)
     const warn = share > FABLE_WARN_SHARE
     const working = e.props.isWorking
-    // Another plugin's band (superpowers-nudge's, say) may sit beneath: draw it
+    // Another plugin's band (thinkfirst-skillcue's, say) may sit beneath: draw it
     // under this one instead of hiding it.
     const below = await next(e)
 

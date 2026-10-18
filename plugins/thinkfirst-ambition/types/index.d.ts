@@ -28,7 +28,7 @@ export type Spend = {
 
 declare module 'claude-code' {
   interface PluginState {
-    'fable-ambition': {
+    'thinkfirst-ambition': {
       card: Card | null
       busy: Fn | null
       spend: Spend

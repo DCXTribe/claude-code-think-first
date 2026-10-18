@@ -4,13 +4,13 @@
   "owner": { "name": "Victor Cheong" },
   "plugins": [
     {
-      "name": "fable-ambition",
-      "source": "./plugins/fable-ambition",
+      "name": "thinkfirst-ambition",
+      "source": "./plugins/thinkfirst-ambition",
       "description": "A band above the prompt: Fable thinks (Reverb, Council, Summit, Deepen), Opus and Sonnet act, and a token meter keeps Fable's share honest."
     },
     {
-      "name": "superpowers-nudge",
-      "source": "./plugins/superpowers-nudge",
+      "name": "thinkfirst-skillcue",
+      "source": "./plugins/thinkfirst-skillcue",
       "description": "Band above the prompt that nudges you and Claude to activate a superpowers skill on development prompts."
     }
   ]

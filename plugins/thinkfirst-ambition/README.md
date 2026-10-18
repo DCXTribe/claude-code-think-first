@@ -1,4 +1,4 @@
-# fable-ambition
+# thinkfirst-ambition
 
 A band above the prompt. Fable thinks, Opus and Sonnet act, and a token meter keeps Fable's share honest.
 
@@ -7,13 +7,13 @@ A band above the prompt. Fable thinks, Opus and Sonnet act, and a token meter ke
 At the prompt of a Claude Code terminal session:
 
 ```
-/plugin install fable-ambition --marketplace DCXTribe/claude-code-think-first
+/plugin install thinkfirst-ambition --marketplace DCXTribe/claude-code-think-first
 ```
 
 From a shell:
 
 ```
-claude plugin install fable-ambition --marketplace DCXTribe/claude-code-think-first
+claude plugin install thinkfirst-ambition --marketplace DCXTribe/claude-code-think-first
 ```
 
 In the desktop app: click + next to the prompt box, then Plugins, Add marketplace with `DCXTribe/claude-code-think-first`, then Add plugin.

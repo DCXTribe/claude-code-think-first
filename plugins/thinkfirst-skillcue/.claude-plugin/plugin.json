@@ -1,6 +1,6 @@
 {
-  "name": "superpowers-nudge",
-  "version": "0.4.1",
+  "name": "thinkfirst-skillcue",
+  "version": "0.5.0",
   "description": "Alerts you, and reminds Claude, to activate a superpowers skill when a prompt looks like development work",
   "author": {
     "name": "Victor Cheong"
@@ -12,8 +12,8 @@
   "userConfig": {
     "enabled": {
       "type": "boolean",
-      "title": "Superpowers nudge",
-      "description": "Show the band above the prompt and remind Claude to activate a superpowers skill when a prompt looks like development work. Also /superpowers-nudge on|off|pause|resume.",
+      "title": "Skill cue",
+      "description": "Show the band above the prompt and remind Claude to activate a superpowers skill when a prompt looks like development work. Also /thinkfirst-skillcue on|off|pause|resume.",
       "default": true
     }
   }

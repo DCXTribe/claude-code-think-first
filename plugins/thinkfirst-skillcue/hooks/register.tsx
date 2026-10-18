@@ -19,12 +19,12 @@ const NOT_DEV = /^\s*(\/|what is|what's|explain|why does|how does|how do i|tell 
 
 const CODE_FILE = /\.(ts|tsx|js|jsx|mjs|cjs|py|rb|go|rs|java|kt|swift|m|mm|c|cc|cpp|h|hpp|cs|php|sh|zsh|sql|vue|svelte|dart|scala|ex|exs|html|css|scss)$/i
 
-const COMMAND = 'superpowers-nudge'
-const CONFIG_KEY = 'superpowers-nudge.enabled'
+const COMMAND = 'skillcue'
+const CONFIG_KEY = 'thinkfirst-skillcue.enabled'
 
-const nudge = atom({ plugin: 'superpowers-nudge', key: 'nudge' } as const, null)
-const paused = atom({ plugin: 'superpowers-nudge', key: 'paused' } as const, false)
-const PAUSED_STATUS = `superpowers nudge paused for this session. /${'superpowers-nudge'} resume to continue`
+const nudge = atom({ plugin: 'thinkfirst-skillcue', key: 'nudge' } as const, null)
+const paused = atom({ plugin: 'thinkfirst-skillcue', key: 'paused' } as const, false)
+const PAUSED_STATUS = `skill cue paused for this session. /skillcue resume to continue`
 
 export function classify(text: string): Suggestion | null {
   if (NOT_DEV.test(text)) return null
@@ -49,7 +49,7 @@ export const register: Register = (on, options) => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: COMMAND,
-      description: 'Superpowers nudge: /superpowers-nudge on|off|pause|resume|status',
+      description: 'Skill cue: /skillcue on|off|pause|resume|status',
     })
     return next(e)
   })
@@ -58,23 +58,23 @@ export const register: Register = (on, options) => {
     const arg = (e.args ?? '').trim().toLowerCase()
     if (arg === 'on' || arg === 'off') {
       await $.config.set({ key: CONFIG_KEY, value: arg === 'on' })
-      return { text: `Superpowers nudge turned ${arg}.` }
+      return { text: `Skill cue turned ${arg}.` }
     }
     if (arg === 'pause' || arg === 'hold') {
       await update($, paused, () => true)
       await update($, nudge, () => null)
       $.ui.status(PAUSED_STATUS)
-      return { text: 'Superpowers nudge paused for this session. /superpowers-nudge resume to continue.' }
+      return { text: 'Skill cue paused for this session. /skillcue resume to continue.' }
     }
     if (arg === 'resume') {
       await update($, paused, () => false)
       $.ui.status(undefined)
-      return { text: 'Superpowers nudge resumed.' }
+      return { text: 'Skill cue resumed.' }
     }
     const isPaused = await read($, paused)
     const state = !enabled ? 'off' : isPaused ? 'paused for this session' : 'on'
     return {
-      text: `Superpowers nudge is ${state}. Use /${COMMAND} on|off|pause|resume, or the "Superpowers nudge" row in /config.`,
+      text: `Skill cue is ${state}. Use /${COMMAND} on|off|pause|resume, or the "Skill cue" row in /config.`,
     }
   })
 
@@ -92,7 +92,7 @@ export const register: Register = (on, options) => {
     $.ui.toast(`Dev task detected (${suggestion.reason}): activate ${suggestion.skill}`, { timeoutMs: 6000 })
 
     const reminder =
-      `[superpowers-nudge] This prompt looks like development work (${suggestion.reason}). ` +
+      `[skillcue] This prompt looks like development work (${suggestion.reason}). ` +
       `Before any other response or tool call, invoke the Skill tool with "${suggestion.skill}" ` +
       `(or the superpowers skill that fits better), as the using-superpowers rule requires.`
 
@@ -147,14 +147,14 @@ export const register: Register = (on, options) => {
       $.ui.status(PAUSED_STATUS)
     }
 
-    // Another plugin's band (fable-ambition's, say) may sit beneath: draw it
+    // Another plugin's band (thinkfirst-ambition's, say) may sit beneath: draw it
     // under this one instead of hiding it.
     const below = await next(e)
 
     return (
       <Box flexDirection="column">
         <Box key="nudge" borderStyle="round" borderColor="claude" paddingX={1} gap={1}>
-          <Text bold color="claude">⚡ Superpowers</Text>
+          <Text bold color="claude">⚡ Skill cue</Text>
           <Text>
             Dev task: {current.reason}. Suggested <Text bold>{current.skill}</Text>
           </Text>

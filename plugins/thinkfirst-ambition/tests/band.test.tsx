@@ -1,7 +1,7 @@
 import { test, expect } from 'claude-code/testing'
 
 const BAND = {
-  plugin: 'fable-ambition',
+  plugin: 'thinkfirst-ambition',
   component: 'AbovePrompt',
   props: {
     hasSurvey: false,

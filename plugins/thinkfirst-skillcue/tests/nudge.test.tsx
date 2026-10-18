@@ -2,7 +2,7 @@ import { test, expect } from 'claude-code/testing'
 import { classify } from '../hooks/register'
 
 const typed = (text: string) => ({ text, wait: false, origin: { kind: 'composer' } as const })
-const cmd = (args = '') => ({ command: 'superpowers-nudge', args, origin: { kind: 'composer' } as const, presentation: { isFullscreen: false, columns: 100 } })
+const cmd = (args = '') => ({ command: 'skillcue', args, origin: { kind: 'composer' } as const, presentation: { isFullscreen: false, columns: 100 } })
 const BAND = {
   component: 'AbovePrompt' as const,
   props: { hasSurvey: false, isWorking: false, maxRows: 10, bodyColumns: 100, scroll: { offset: 0, bodyRows: 10 }, view: {} },
@@ -94,7 +94,7 @@ test('the band shows after a dev prompt, Activate fills the prompt, and the band
   on('ui.render', { component: 'AbovePrompt' }, ($, e) => { const { Box } = $.ui.resolve(e); return <Box key="empty" /> })
 
   for (const surface of ['terminal', 'desktop'] as const) {
-    const ui = await $.ui.mount({ plugin: 'superpowers-nudge', surface, ...BAND })
+    const ui = await $.ui.mount({ plugin: 'thinkfirst-skillcue', surface, ...BAND })
     expect(await ui.find({ key: 'activate' })).toBe(undefined)
 
     await $.prompt.submit(typed('add a dark mode toggle'))
@@ -118,7 +118,7 @@ test('Dismiss clears the band without filling the prompt', async ($, on) => {
   on('prompt.fill', (_$, e) => { filled.push(e.text); return { isFilled: true } })
   on('ui.render', { component: 'AbovePrompt' }, ($, e) => { const { Box } = $.ui.resolve(e); return <Box key="empty" /> })
 
-  const ui = await $.ui.mount({ plugin: 'superpowers-nudge', surface: 'terminal', ...BAND })
+  const ui = await $.ui.mount({ plugin: 'thinkfirst-skillcue', surface: 'terminal', ...BAND })
   await $.prompt.submit(typed('fix the broken build'))
   await ui.redraw()
   expect(await ui.find({ key: 'dismiss' })).toBeDefined()
@@ -138,7 +138,7 @@ test('Hold pauses detection for the session, resume brings it back', async ($, o
   on('prompt.fill', () => ({ isFilled: true }))
   on('ui.render', { component: 'AbovePrompt' }, ($, e) => { const { Box } = $.ui.resolve(e); return <Box key="empty" /> })
 
-  const ui = await $.ui.mount({ plugin: 'superpowers-nudge', surface: 'terminal', ...BAND })
+  const ui = await $.ui.mount({ plugin: 'thinkfirst-skillcue', surface: 'terminal', ...BAND })
   await $.prompt.submit(typed('fix the broken build'))
   await ui.redraw()
   expect(await ui.find({ key: 'hold' })).toBeDefined()
@@ -161,7 +161,7 @@ test('Hold pauses detection for the session, resume brings it back', async ($, o
   await ui.unmount()
 })
 
-test('/superpowers-nudge pause works without the band', async ($, on) => {
+test('/skillcue pause works without the band', async ($, on) => {
   const toasts: string[] = []
   on('ui.toast', (_$, e) => { toasts.push(e.text); return { value: undefined } })
   on('ui.status', () => ({ value: undefined }))
@@ -206,7 +206,7 @@ test('Activate puts the skill in front of the draft instead of over it', async (
   on('prompt.fill', (_$, e) => { filled.push(e.text); return { isFilled: true } })
   on('ui.render', { component: 'AbovePrompt' }, ($, e) => { const { Box } = $.ui.resolve(e); return <Box key="empty" /> })
 
-  const ui = await $.ui.mount({ plugin: 'superpowers-nudge', surface: 'terminal', ...BAND })
+  const ui = await $.ui.mount({ plugin: 'thinkfirst-skillcue', surface: 'terminal', ...BAND })
   await $.prompt.submit(typed('add a dark mode toggle'))
   await ui.redraw()
   await ui.press({ key: 'activate' })
@@ -220,7 +220,7 @@ test('only Dismiss is the close control, so closing never pauses the session', a
   on('prompt.submit', (_$, e) => ({ text: e.text, context: e.context }))
   on('ui.render', { component: 'AbovePrompt' }, ($, e) => { const { Box } = $.ui.resolve(e); return <Box key="empty" /> })
 
-  const ui = await $.ui.mount({ plugin: 'superpowers-nudge', surface: 'desktop', ...BAND })
+  const ui = await $.ui.mount({ plugin: 'thinkfirst-skillcue', surface: 'desktop', ...BAND })
   await $.prompt.submit(typed('fix the broken build'))
   await ui.redraw()
   expect((await ui.find({ key: 'dismiss' }))?.props.role).toBe('dismiss')
@@ -235,7 +235,7 @@ test('another plugin\'s band beneath is drawn under the nudge, not hidden', asyn
   on('ui.render', { component: 'AbovePrompt' }, ($, e) => { const { Text } = $.ui.resolve(e); return <Text key="other">other band</Text> })
 
   for (const surface of ['terminal', 'desktop'] as const) {
-    const ui = await $.ui.mount({ plugin: 'superpowers-nudge', surface, ...BAND })
+    const ui = await $.ui.mount({ plugin: 'thinkfirst-skillcue', surface, ...BAND })
     await $.prompt.submit(typed('fix the broken build'))
     await ui.redraw()
     expect(await ui.find({ key: 'activate' })).toBeDefined()

@@ -5,6 +5,6 @@ export type Suggestion = {
 
 declare module 'claude-code' {
   interface PluginState {
-    'superpowers-nudge': { nudge: Suggestion | null; paused: boolean }
+    'thinkfirst-skillcue': { nudge: Suggestion | null; paused: boolean }
   }
 }
